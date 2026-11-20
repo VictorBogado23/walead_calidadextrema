@@ -8,7 +8,7 @@ Manager. Liviano, sin dependencias y personalizable con `data-attributes`.
 ## Instalación rápida
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/VictorBogado23/walead_calidadextrema@main/widget.min.js"
+<script src="https://victorbogado23.github.io/walead_calidadextrema/widget.min.js"
         data-phone="5491122334455"
         data-country="AR"
         data-color="#25D366"

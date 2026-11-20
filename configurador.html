@@ -267,7 +267,7 @@
 (function () {
   "use strict";
 
-  var DEFAULT_SRC = "https://cdn.jsdelivr.net/gh/VictorBogado23/walead_calidadextrema@main/widget.min.js";
+  var DEFAULT_SRC = "https://victorbogado23.github.io/walead_calidadextrema/widget.min.js";
   var STORE_KEY = "walead_configurador";
 
   // Campo del formulario -> atributo del widget (data-*) y clave camelCase (WALEAD_CONFIG).
@@ -364,7 +364,7 @@
     return "<script>\n  window.WALEAD_CONFIG = " + json + ";\n" +
       "  (function () {\n" +
       '    var s = document.createElement("script");\n' +
-      "    s.src = " + JSON.stringify(src).replace(/</g, "\\u003c") + ' + "?d=" + new Date().toISOString().slice(0, 13);\n' +
+      "    s.src = " + JSON.stringify(src).replace(/</g, "\\u003c") + ' + "?d=" + new Date().toISOString().slice(0, 15);\n' +
       "    document.head.appendChild(s);\n" +
       "  })();\n</" + "script>";
   }

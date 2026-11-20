@@ -171,27 +171,29 @@ Define la configuración antes de cargar el widget:
   };
   (function () {
     var s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/gh/VictorBogado23/walead_calidadextrema@main/widget.min.js?d=" + new Date().toISOString().slice(0, 13);
+    s.src = "https://victorbogado23.github.io/walead_calidadextrema/widget.min.js?d=" + new Date().toISOString().slice(0, 15);
     document.head.appendChild(s);
   })();
 </script>
 ```
 
-El `?d=` con la fecha y la hora hace que cada navegador pida el widget de nuevo una vez por
-hora, así nadie se queda con una versión vieja guardada.
+El `?d=` con la fecha y la hora hace que cada navegador pida el widget de nuevo cada
+10 minutos, así nadie se queda con una versión vieja guardada.
 
 Las claves son las mismas que los atributos, en camelCase (`buttonText`, `ctaText`, …).
 
 ### Actualizaciones automáticas
 
-La dirección termina en `@main`: carga siempre la última versión publicada, así que las
-mejoras llegan solas a todos los sitios **sin tocar GTM**. Nunca se quitan ni se renombran
-opciones ni datos del `dataLayer`; solo se agregan, para que nada de lo armado en GTM se rompa.
+El widget se sirve desde GitHub Pages (rama `main`): carga siempre la última versión publicada,
+así que las mejoras llegan solas a todos los sitios **sin tocar GTM**. Nunca se quitan ni se
+renombran opciones ni datos del `dataLayer`; solo se agregan, para que nada de lo armado en GTM
+se rompa.
 
-Al publicar se fuerza la actualización de jsDelivr
-(`https://purge.jsdelivr.net/gh/VictorBogado23/walead_calidadextrema@main/widget.min.js`), así que
-la versión nueva sale al momento. Con el código de GTM de arriba, cada navegador la toma
-como mucho en una hora. Para fijar una versión exacta, usa `@v1.2.3`.
+GitHub Pages publica cada push a `main` en 1 o 2 minutos y lo guarda en caché 10 minutos; con el
+código de GTM de arriba, cada navegador toma la versión nueva en 10 a 20 minutos como máximo.
+
+Se dejó de usar jsDelivr (`@main`) porque tardaba horas en tomar los cambios y a veces volvía
+a entregar versiones viejas aunque se purgara.
 
 ---
 
