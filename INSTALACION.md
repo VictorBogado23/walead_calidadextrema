@@ -142,6 +142,7 @@ Variables disponibles:
 | `{pagina}` | mensaje de WhatsApp | título de la página donde estaba el visitante |
 | `{url}` | mensaje de WhatsApp | link de esa página |
 | `{email}`, `{phone}`, `{country}` | mensaje de WhatsApp | lo que cargó el visitante |
+| `{tipo}` | mensaje de WhatsApp | tipo de cliente elegido: Consumidor Final, Institución o Revendedor |
 
 ```html
 data-name="Pizzería Don José"
@@ -216,6 +217,7 @@ Al enviarse un lead, el widget hace:
 dataLayer.push({
   event: "walead_submit",
   walead_lead_id: "wl_3f9a1c2e7b604d18",
+  walead_tipo_cliente: "Revendedor", // Consumidor Final | Institución | Revendedor
   user_data: {
     email: "juan@gmail.com",           // en minúsculas
     phone_number: "+5491122334455",    // E.164
@@ -226,10 +228,13 @@ dataLayer.push({
 
 El email y el teléfono van **solo** dentro de `user_data`.
 
+El campo **Tipo de cliente** es obligatorio: el visitante elige entre Consumidor Final,
+Institución o Revendedor, y el valor llega en `walead_tipo_cliente`.
+
 Configuración en GTM:
 
 1. **Activador**: Evento personalizado → nombre `walead_submit`.
-2. **Variables de capa de datos** (versión 2): `walead_lead_id`, `user_data.email`,
+2. **Variables de capa de datos** (versión 2): `walead_lead_id`, `walead_tipo_cliente`, `user_data.email`,
    `user_data.phone_number` y, si la quieres entera, `user_data`.
 3. **Google Ads — Conversiones avanzadas**: en la etiqueta de conversión, activa *Incluir datos
    proporcionados por el usuario* → nueva variable *Datos proporcionados por el usuario* →
@@ -240,8 +245,8 @@ Configuración en GTM:
 5. **Meta (píxel / CAPI)**: manda `event_id` = `{{walead_lead_id}}`, `em` = `{{user_data.email}}`
    y `ph` = `{{user_data.phone_number}}` (Meta pide el teléfono sin `+`; GTM o tu plantilla de
    CAPI lo normaliza y hashea).
-6. **Hoja o CRM**: una etiqueta con el mismo activador que envíe `walead_lead_id`, el email y
-   el teléfono. Los datos de campaña (`gclid`, `utm_*`) los toma GTM con sus propias variables.
+6. **Hoja o CRM**: una etiqueta con el mismo activador que envíe `walead_lead_id`, el email,
+   el teléfono y `walead_tipo_cliente`. Los datos de campaña (`gclid`, `utm_*`) los toma GTM con sus propias variables.
 
 Google y Meta hashean (SHA-256) los datos del lado de la etiqueta: el widget los entrega
 normalizados (email en minúsculas, teléfono E.164), que es lo que exigen para que coincidan.

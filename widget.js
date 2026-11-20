@@ -7,6 +7,7 @@
  * Captura email + teléfono (con selector de país, formato E.164), publica
  * 'walead_submit' en el dataLayer (email y teléfono dentro de user_data) y
  * abre WhatsApp. Guardar el lead (Sheet, CRM, etc.) se hace desde GTM.
+ * El visitante elige además su tipo de cliente (walead_tipo_cliente).
  *
  * Todos los atributos son opcionales salvo data-phone.
  * Ver el instructivo (INSTALACION.md) para la lista completa.
@@ -328,6 +329,12 @@
     ".wl-cc[aria-expanded=true] .wl-chev{transform:rotate(180deg)}",
     ".wl-dial{font-variant-numeric:tabular-nums}",
     ".wl-phone input{padding-left:12px}",
+    ".wl-control select{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--wl-text);padding:0 40px 0 0;margin:0;cursor:pointer;-webkit-appearance:none;appearance:none;border-radius:0 14px 14px 0}",
+    ".wl-control select:invalid{color:var(--wl-muted)}",
+    ".wl-control select option{color:var(--wl-text);background:var(--wl-bg)}",
+    ".wl-tipo .wl-chev{position:absolute;right:14px;width:16px;height:16px;color:var(--wl-muted);pointer-events:none}",
+    ".wl-tipo{position:relative}",
+    ".wl-valid .wl-tipo .wl-ok{position:absolute;right:36px;margin:0}",
 
     // Selector de país: capa sobre el panel, debajo del encabezado.
     ".wl-pop{position:absolute;left:10px;right:10px;top:84px;bottom:10px;z-index:5;display:flex;flex-direction:column;background:var(--wl-bg);border:1px solid var(--wl-line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);overflow:hidden;animation:wl-in .15s ease}",
@@ -398,10 +405,14 @@
   var xIcon = stroke('<path d="M18 6 6 18M6 6l12 12"/>');
   var mailIcon = stroke('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>');
   var chevIcon = stroke('<path d="m6 9 6 6 6-6"/>', "wl-chev");
+  var userIcon = stroke('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>');
   var okIcon = stroke('<path d="M20 6 9 17l-5-5"/>', "wl-ok");
   var lockIcon = stroke('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>');
   var alertIcon = stroke('<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>');
   var checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  // Opciones del campo "Tipo de cliente" (obligatorio).
+  var TIPOS = ["Consumidor Final", "Institución", "Revendedor"];
 
   function flagUrl(iso) {
     return "https://flagcdn.com/w40/" + iso.toLowerCase() + ".png";
@@ -466,6 +477,17 @@
               "</div>" +
               '<div class="wl-err" id="wl-phone-err" role="alert">' + alertIcon + "<span></span></div>" +
             "</div>" +
+            '<div class="wl-field" data-f="tipo">' +
+              '<label for="wl-tipo">Tipo de cliente</label>' +
+              '<div class="wl-control wl-tipo"><span class="wl-ic">' + userIcon + "</span>" +
+                '<select id="wl-tipo" name="tipo_cliente" aria-describedby="wl-tipo-err" required>' +
+                  '<option value="" disabled selected>Elegí una opción</option>' +
+                  TIPOS.map(function (t) { return '<option value="' + escapeHtml(t) + '">' + escapeHtml(t) + "</option>"; }).join("") +
+                "</select>" +
+                okIcon + chevIcon +
+              "</div>" +
+              '<div class="wl-err" id="wl-tipo-err" role="alert">' + alertIcon + "<span></span></div>" +
+            "</div>" +
             '<button class="wl-submit" type="submit">' + waIcon + "<span>" + escapeHtml(cfg.buttonText) + "</span></button>" +
             (cfg.privacy ? '<p class="wl-privacy">' + lockIcon + "<span>" + escapeHtml(cfg.privacy) + "</span></p>" : "") +
           "</form>" +
@@ -500,6 +522,8 @@
     var phoneField = $('[data-f="phone"]');
     var emailInput = $("#wl-email");
     var phoneInput = $("#wl-phone");
+    var tipoField = $('[data-f="tipo"]');
+    var tipoSelect = $("#wl-tipo");
     var suggestBox = $(".wl-suggest");
     var ccBtn = $(".wl-cc");
     var pop = $(".wl-pop");
@@ -701,7 +725,7 @@
       field.classList.toggle("wl-invalid", !!msg);
       field.classList.toggle("wl-valid", !!valid);
       field.querySelector(".wl-err span").textContent = msg || "";
-      field.querySelector("input:not([type=text])").setAttribute("aria-invalid", msg ? "true" : "false");
+      field.querySelector("input:not([type=text]),select").setAttribute("aria-invalid", msg ? "true" : "false");
     }
 
     function validateEmail(silent) {
@@ -726,6 +750,12 @@
       var msg = !v ? "Ingresá tu número de WhatsApp" : !toE164(v, current) ? "Número inválido para " + current.name + ". Ej: " + current.example : "";
       if (!silent) setState(phoneField, msg, !msg);
       return !msg;
+    }
+
+    function validateTipo(silent) {
+      var ok = TIPOS.indexOf(tipoSelect.value) !== -1;
+      if (!silent) setState(tipoField, ok ? "" : "Elegí el tipo de cliente", ok);
+      return ok;
     }
 
     // Si pegan el número con +código, cambiamos el país y dejamos solo el número local.
@@ -756,6 +786,8 @@
       if (phoneField.classList.contains("wl-invalid") || phoneField.classList.contains("wl-valid")) validatePhone();
     });
 
+    tipoSelect.addEventListener("change", function () { validateTipo(); });
+
     // ------- Prellenado (si el visitante ya dejó sus datos antes) -------
     var saved = null;
     try { saved = JSON.parse(store("localStorage", "walead_lead") || "null"); } catch (e) {}
@@ -764,6 +796,7 @@
     if (saved) {
       if (saved.email) emailInput.value = saved.email;
       if (saved.nacional) phoneInput.value = saved.nacional;
+      if (TIPOS.indexOf(saved.tipo) !== -1) tipoSelect.value = saved.tipo;
     }
 
     // ------- Envío -------
@@ -774,8 +807,10 @@
 
       var okEmail = validateEmail();
       var okPhone = validatePhone();
+      var okTipo = validateTipo();
       if (!okEmail) return emailInput.focus();
       if (!okPhone) return phoneInput.focus();
+      if (!okTipo) return tipoSelect.focus();
 
       var email = emailInput.value.trim().toLowerCase();
       var telefono = toE164(phoneInput.value, current);
@@ -784,6 +819,7 @@
         email: email,
         telefono: telefono,
         pais: current.iso,
+        tipo: tipoSelect.value,
       };
 
       pushLead(data);
@@ -793,6 +829,7 @@
         email: data.email,
         nacional: phoneInput.value.trim(),
         pais: current.iso,
+        tipo: data.tipo,
       }));
 
       var msg = renderTemplate(cfg.template, {
@@ -804,6 +841,7 @@
         telefono: data.telefono,
         country: current.name,
         pais: current.name,
+        tipo: data.tipo,
       });
       var waUrl = "https://wa.me/" + cfg.phone + "?text=" + encodeURIComponent(msg);
 
@@ -837,6 +875,7 @@
     track({
       event: "walead_submit",       // <- activador en GTM
       walead_lead_id: data.lead_id, // ID de transacción / event_id: evita contar doble
+      walead_tipo_cliente: data.tipo, // Consumidor Final | Institución | Revendedor
       // Formato que esperan GA4 / Google Ads para datos proporcionados por el usuario.
       user_data: {
         email: data.email,

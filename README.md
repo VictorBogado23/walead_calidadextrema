@@ -33,6 +33,7 @@ Solo `data-phone` es obligatorio. La guía completa está en
 - Formulario de email + WhatsApp con selector de país (número en formato E.164).
 - Diseño moderno y adaptable (bottom sheet en celulares), accesible y aislado con Shadow DOM.
 - Personalizable: color, textos, avatar, país por defecto, plantilla del mensaje, posición.
+- Campo obligatorio "Tipo de cliente" (Consumidor Final, Institución o Revendedor), que llega como `walead_tipo_cliente`.
 - Evento `walead_submit` al `dataLayer`: email y teléfono van solo dentro de `user_data`, listos para conversiones avanzadas (Google Ads / GA4 / Meta).
 - `lead_id` estable por persona: sin conversiones duplicadas.
 - Embudo medible: `walead_open`, `walead_start`, `walead_submit`.
