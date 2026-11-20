@@ -170,7 +170,7 @@ Define la configuración antes de cargar el widget:
   };
   (function () {
     var s = document.createElement("script");
-    s.src = "https://cdn.jsdelivr.net/gh/VictorBogado23/walead-widget@main/widget.min.js?d=" + new Date().toISOString().slice(0, 13);
+    s.src = "https://cdn.jsdelivr.net/gh/VictorBogado23/walead_calidadextrema@main/widget.min.js?d=" + new Date().toISOString().slice(0, 13);
     document.head.appendChild(s);
   })();
 </script>
@@ -188,7 +188,7 @@ mejoras llegan solas a todos los sitios **sin tocar GTM**. Nunca se quitan ni se
 opciones ni datos del `dataLayer`; solo se agregan, para que nada de lo armado en GTM se rompa.
 
 Al publicar se fuerza la actualización de jsDelivr
-(`https://purge.jsdelivr.net/gh/VictorBogado23/walead-widget@main/widget.min.js`), así que
+(`https://purge.jsdelivr.net/gh/VictorBogado23/walead_calidadextrema@main/widget.min.js`), así que
 la versión nueva sale al momento. Con el código de GTM de arriba, cada navegador la toma
 como mucho en una hora. Para fijar una versión exacta, usa `@v1.2.3`.
 
