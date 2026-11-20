@@ -67,7 +67,8 @@ Solo **`data-phone` es obligatorio**. El resto son opcionales.
 | `data-name` | `Pizzería Don José` | Nombre del negocio. Es el título por defecto y se inserta con `{negocio}` en cualquier texto. |
 | `data-country` | `AR` | País preseleccionado en el teléfono (código ISO). Si lo omites, se detecta por el idioma del navegador. |
 | `data-countries` | `AR,UY,PY` | Países que aparecen destacados arriba de la lista (el resto sigue disponible). |
-| `data-color` | `#25D366` | Color de marca (burbuja, botón, encabezado). El texto se ajusta a negro/blanco solo. |
+| `data-color` | `#25D366` | Color de marca (burbuja, botón, encabezado). |
+| `data-text-color` | `#ffffff` | Color del texto y los íconos sobre el color de marca (título, logo de WhatsApp, botón, burbuja). Con `auto` se elige negro o blanco según el contraste. |
 | `data-theme` | `auto` / `light` / `dark` | Tema del panel. Por defecto `auto`: mira el fondo del sitio. La fuente del widget también se toma del sitio. |
 | `data-position` | `right` / `left` | Esquina donde aparece la burbuja. Por defecto `right`. |
 | `data-title` | `¿Hablamos?` | Título del encabezado del panel. |

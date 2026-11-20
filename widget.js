@@ -60,6 +60,9 @@
   var cfg = {
     phone: String(attr("phone", "") || "").replace(/[^\d]/g, ""), // solo dígitos, con código de país
     color: attr("color", "#25D366"), // color de marca
+    // Color del texto e íconos sobre el color de marca (encabezado, botón, burbuja).
+    // "auto" elige negro o blanco según el contraste.
+    textColor: attr("text-color", "#ffffff"),
     position: attr("position", "right"), // right | left
     title: attr("title", NAME || "¿Hablamos?"),
     subtitle: textAttr("subtitle", "Te respondemos por WhatsApp"), // vacío = no se muestra
@@ -239,7 +242,7 @@
   // ------- Colores derivados del color de marca -------
   var BRAND = normHex(cfg.color) ? "#" + normHex(cfg.color) : "#25D366";
   var BRAND_DARK = shade(BRAND, -0.18);
-  var ON_BRAND = pickTextColor(BRAND, BRAND_DARK); // texto legible sobre todo el degradé
+  var ON_BRAND = normHex(cfg.textColor) ? "#" + normHex(cfg.textColor) : pickTextColor(BRAND, BRAND_DARK);
   var INK = shade(BRAND, -0.45); // versión oscura para texto/links sobre blanco
   var INK_LIGHT = shade(BRAND, 0.55); // versión clara para texto/links sobre fondo oscuro
   var RING = hexA(BRAND, 0.22);
@@ -329,12 +332,20 @@
     ".wl-cc[aria-expanded=true] .wl-chev{transform:rotate(180deg)}",
     ".wl-dial{font-variant-numeric:tabular-nums}",
     ".wl-phone input{padding-left:12px}",
-    ".wl-control select{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--wl-text);padding:0 40px 0 0;margin:0;cursor:pointer;-webkit-appearance:none;appearance:none;border-radius:0 14px 14px 0}",
-    ".wl-control select:invalid{color:var(--wl-muted)}",
-    ".wl-control select option{color:var(--wl-text);background:var(--wl-bg)}",
-    ".wl-tipo .wl-chev{position:absolute;right:14px;width:16px;height:16px;color:var(--wl-muted);pointer-events:none}",
-    ".wl-tipo{position:relative}",
-    ".wl-valid .wl-tipo .wl-ok{position:absolute;right:36px;margin:0}",
+    // Tipo de cliente: botón + lista propia.
+    ".wl-tipo{position:relative;cursor:pointer}",
+    ".wl-tipo-btn{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--wl-text);text-align:left;padding:0 66px 0 0;margin:0;cursor:pointer;border-radius:0 14px 14px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+    ".wl-tipo-btn.wl-empty{color:var(--wl-muted)}",
+    ".wl-tipo>.wl-chev{position:absolute;right:14px;width:16px;height:16px;color:var(--wl-muted);pointer-events:none;transition:transform .15s}",
+    ".wl-list-open .wl-tipo>.wl-chev{transform:rotate(180deg)}",
+    ".wl-valid .wl-tipo>.wl-ok{position:absolute;right:38px;margin:0}",
+    ".wl-list-open .wl-control{border-color:var(--wl-brand);background:var(--wl-bg);box-shadow:0 0 0 4px var(--wl-ring)}",
+    ".wl-tipo-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:4;list-style:none;margin:0;padding:6px;background:var(--wl-bg);border:1px solid var(--wl-line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.16);outline:0;cursor:default;animation:wl-in .15s ease}",
+    ".wl-tipo-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:0 12px;border-radius:10px;cursor:pointer;font-size:15px;color:var(--wl-text)}",
+    ".wl-tipo-list li.wl-active{background:var(--wl-hover)}",
+    ".wl-tipo-list li[aria-selected=true]{font-weight:600;color:var(--wl-ink)}",
+    ".wl-tipo-list li svg{width:18px;height:18px;flex:0 0 auto;color:var(--wl-ink);opacity:0}",
+    ".wl-tipo-list li[aria-selected=true] svg{opacity:1}",
 
     // Selector de país: capa sobre el panel, debajo del encabezado.
     ".wl-pop{position:absolute;left:10px;right:10px;top:84px;bottom:10px;z-index:5;display:flex;flex-direction:column;background:var(--wl-bg);border:1px solid var(--wl-line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);overflow:hidden;animation:wl-in .15s ease}",
@@ -406,6 +417,7 @@
   var mailIcon = stroke('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>');
   var chevIcon = stroke('<path d="m6 9 6 6 6-6"/>', "wl-chev");
   var userIcon = stroke('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>');
+  var tickIcon = stroke('<path d="M20 6 9 17l-5-5"/>');
   var okIcon = stroke('<path d="M20 6 9 17l-5-5"/>', "wl-ok");
   var lockIcon = stroke('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>');
   var alertIcon = stroke('<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>');
@@ -478,13 +490,15 @@
               '<div class="wl-err" id="wl-phone-err" role="alert">' + alertIcon + "<span></span></div>" +
             "</div>" +
             '<div class="wl-field" data-f="tipo">' +
-              '<label for="wl-tipo">Tipo de cliente</label>' +
+              '<label id="wl-tipo-lbl" for="wl-tipo">Tipo de cliente</label>' +
               '<div class="wl-control wl-tipo"><span class="wl-ic">' + userIcon + "</span>" +
-                '<select id="wl-tipo" name="tipo_cliente" aria-describedby="wl-tipo-err" required>' +
-                  '<option value="" disabled selected>Elegí una opción</option>' +
-                  TIPOS.map(function (t) { return '<option value="' + escapeHtml(t) + '">' + escapeHtml(t) + "</option>"; }).join("") +
-                "</select>" +
+                '<button type="button" id="wl-tipo" class="wl-tipo-btn wl-empty" aria-haspopup="listbox" aria-expanded="false" aria-controls="wl-tipo-list" aria-labelledby="wl-tipo-lbl wl-tipo" aria-describedby="wl-tipo-err">Elegí una opción</button>' +
                 okIcon + chevIcon +
+                '<ul class="wl-tipo-list" id="wl-tipo-list" role="listbox" aria-labelledby="wl-tipo-lbl" tabindex="-1" hidden>' +
+                  TIPOS.map(function (t, i) {
+                    return '<li role="option" id="wl-tipo-o' + i + '" aria-selected="false"><span>' + escapeHtml(t) + "</span>" + tickIcon + "</li>";
+                  }).join("") +
+                "</ul>" +
               "</div>" +
               '<div class="wl-err" id="wl-tipo-err" role="alert">' + alertIcon + "<span></span></div>" +
             "</div>" +
@@ -523,7 +537,11 @@
     var emailInput = $("#wl-email");
     var phoneInput = $("#wl-phone");
     var tipoField = $('[data-f="tipo"]');
-    var tipoSelect = $("#wl-tipo");
+    var tipoBtn = $("#wl-tipo");
+    var tipoList = $("#wl-tipo-list");
+    var tipoOpts = Array.prototype.slice.call(tipoList.querySelectorAll("li"));
+    var tipo = "";
+    var tipoIdx = -1;
     var suggestBox = $(".wl-suggest");
     var ccBtn = $(".wl-cc");
     var pop = $(".wl-pop");
@@ -725,7 +743,7 @@
       field.classList.toggle("wl-invalid", !!msg);
       field.classList.toggle("wl-valid", !!valid);
       field.querySelector(".wl-err span").textContent = msg || "";
-      field.querySelector("input:not([type=text]),select").setAttribute("aria-invalid", msg ? "true" : "false");
+      field.querySelector("input:not([type=text]),.wl-tipo-btn").setAttribute("aria-invalid", msg ? "true" : "false");
     }
 
     function validateEmail(silent) {
@@ -753,7 +771,7 @@
     }
 
     function validateTipo(silent) {
-      var ok = TIPOS.indexOf(tipoSelect.value) !== -1;
+      var ok = TIPOS.indexOf(tipo) !== -1;
       if (!silent) setState(tipoField, ok ? "" : "Elegí el tipo de cliente", ok);
       return ok;
     }
@@ -786,7 +804,64 @@
       if (phoneField.classList.contains("wl-invalid") || phoneField.classList.contains("wl-valid")) validatePhone();
     });
 
-    tipoSelect.addEventListener("change", function () { validateTipo(); });
+    // ------- Lista de tipo de cliente -------
+    function setTipo(v) {
+      tipo = TIPOS.indexOf(v) !== -1 ? v : "";
+      tipoBtn.textContent = tipo || "Elegí una opción";
+      tipoBtn.classList.toggle("wl-empty", !tipo);
+      tipoOpts.forEach(function (li, i) { li.setAttribute("aria-selected", TIPOS[i] === tipo ? "true" : "false"); });
+    }
+    function markTipo(i) {
+      tipoIdx = i;
+      tipoOpts.forEach(function (li, j) { li.classList.toggle("wl-active", j === i); });
+      if (i >= 0) tipoList.setAttribute("aria-activedescendant", tipoOpts[i].id);
+    }
+    function openTipo() {
+      tipoList.hidden = false;
+      tipoBtn.setAttribute("aria-expanded", "true");
+      tipoField.classList.add("wl-list-open");
+      markTipo(Math.max(0, TIPOS.indexOf(tipo)));
+      tipoList.focus();
+      try { tipoList.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) {}
+      markStart();
+    }
+    function closeTipo(focusBtn) {
+      if (tipoList.hidden) return;
+      tipoList.hidden = true;
+      tipoBtn.setAttribute("aria-expanded", "false");
+      tipoField.classList.remove("wl-list-open");
+      if (focusBtn) tipoBtn.focus();
+    }
+    function pickTipo(i) {
+      setTipo(TIPOS[i]);
+      closeTipo(true);
+      validateTipo();
+    }
+    tipoBtn.addEventListener("click", function () {
+      if (tipoList.hidden) openTipo(); else closeTipo(true);
+    });
+    tipoBtn.addEventListener("keydown", function (ev) {
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { ev.preventDefault(); openTipo(); }
+    });
+    tipoList.addEventListener("keydown", function (ev) {
+      var n = TIPOS.length;
+      if (ev.key === "ArrowDown") { ev.preventDefault(); markTipo((tipoIdx + 1) % n); }
+      else if (ev.key === "ArrowUp") { ev.preventDefault(); markTipo((tipoIdx - 1 + n) % n); }
+      else if (ev.key === "Home") { ev.preventDefault(); markTipo(0); }
+      else if (ev.key === "End") { ev.preventDefault(); markTipo(n - 1); }
+      else if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); if (tipoIdx >= 0) pickTipo(tipoIdx); }
+      else if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); closeTipo(true); }
+      else if (ev.key === "Tab") closeTipo(false);
+    });
+    // Que tocar una opción no le saque el foco a la lista antes del click.
+    tipoList.addEventListener("mousedown", function (ev) { ev.preventDefault(); });
+    tipoList.addEventListener("focusout", function (ev) {
+      if (!ev.relatedTarget || !tipoField.contains(ev.relatedTarget)) closeTipo(false);
+    });
+    tipoOpts.forEach(function (li, i) {
+      li.addEventListener("click", function () { pickTipo(i); });
+      li.addEventListener("mousemove", function () { if (tipoIdx !== i) markTipo(i); });
+    });
 
     // ------- Prellenado (si el visitante ya dejó sus datos antes) -------
     var saved = null;
@@ -796,7 +871,7 @@
     if (saved) {
       if (saved.email) emailInput.value = saved.email;
       if (saved.nacional) phoneInput.value = saved.nacional;
-      if (TIPOS.indexOf(saved.tipo) !== -1) tipoSelect.value = saved.tipo;
+      if (TIPOS.indexOf(saved.tipo) !== -1) setTipo(saved.tipo);
     }
 
     // ------- Envío -------
@@ -810,7 +885,7 @@
       var okTipo = validateTipo();
       if (!okEmail) return emailInput.focus();
       if (!okPhone) return phoneInput.focus();
-      if (!okTipo) return tipoSelect.focus();
+      if (!okTipo) return tipoBtn.focus();
 
       var email = emailInput.value.trim().toLowerCase();
       var telefono = toE164(phoneInput.value, current);
@@ -819,7 +894,7 @@
         email: email,
         telefono: telefono,
         pais: current.iso,
-        tipo: tipoSelect.value,
+        tipo: tipo,
       };
 
       pushLead(data);
