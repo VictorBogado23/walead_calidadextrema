@@ -111,7 +111,7 @@
   // ------- Países -------
   // [ISO, nombre, código, ejemplo, mín. dígitos nacionales, máx. dígitos nacionales]
   var COUNTRIES = [
-    ["AR", "Argentina", "54", "11 2345 6789", 10, 11],
+    ["AR", "Argentina", "54", "342 412 3456", 10, 11],
     ["BO", "Bolivia", "591", "7123 4567", 8, 8],
     ["BR", "Brasil", "55", "11 91234 5678", 10, 11],
     ["CL", "Chile", "56", "9 1234 5678", 9, 9],
