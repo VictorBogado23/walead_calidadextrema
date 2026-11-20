@@ -272,8 +272,6 @@
     ".wl-open .wl-launch .wl-i-close{opacity:1;transform:none}",
     ".wl-launch::after{content:'';position:absolute;inset:0;border-radius:50%;animation:wl-pulse 2.4s ease-out 1.5s 3;pointer-events:none}",
     "@keyframes wl-pulse{0%{box-shadow:0 0 0 0 var(--wl-ring)}70%{box-shadow:0 0 0 18px rgba(0,0,0,0)}100%{box-shadow:0 0 0 0 rgba(0,0,0,0)}}",
-    ".wl-badge{position:absolute;top:-2px;right:-2px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#ff3b30;color:#fff;font-size:11px;font-weight:700;line-height:16px;text-align:center;border:2px solid #fff}",
-    ".wl-seen .wl-badge,.wl-open .wl-badge{display:none}",
 
     // Globo CTA
     ".wl-cta{position:fixed;bottom:31px;z-index:2147483000;max-width:240px;background:var(--wl-bg);color:var(--wl-text);border:0;border-radius:18px;padding:9px 16px;font-size:14px;font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.14);cursor:pointer;opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease;pointer-events:none}",
@@ -519,7 +517,7 @@
       "</div>" +
       (cfg.ctaText ? '<button class="wl-cta" type="button">' + escapeHtml(cfg.ctaText) + "</button>" : "") +
       '<button class="wl-launch" type="button" aria-label="Abrir chat de WhatsApp" aria-expanded="false">' +
-        waIcon + closeIcon + '<span class="wl-badge" aria-hidden="true">1</span>' +
+        waIcon + closeIcon +
       "</button>" +
       "</div>";
 
