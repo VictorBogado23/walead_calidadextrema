@@ -195,18 +195,15 @@ como mucho en una hora. Para fijar una versión exacta, usa `@v1.2.3`.
 
 ---
 
-## Leads duplicados
+## Clientes recurrentes
 
-Cada lead tiene un `lead_id` que sale del número del negocio, el email y el teléfono: la misma
-persona tiene siempre el mismo ID, en cualquier navegador o dispositivo. Hay dos barreras:
+Cada envío publica `walead_submit`, aunque la persona ya haya escrito antes: un cliente
+recurrente que vuelve a consultar es una consulta nueva. El `event_id` de cada envío lo genera
+GTM. `walead_lead_id` es estable por persona (sale del número del negocio, el email y el
+teléfono) y sirve para reconocer al cliente recurrente.
 
-1. **Widget**: si ese navegador ya envió el lead, no vuelve a publicar `walead_submit`.
-   La persona igual pasa a WhatsApp y se publica `walead_repeat`.
-2. **Google Ads / Meta**: usando `walead_lead_id` como ID de transacción o `event_id`, descartan
-   la conversión repetida aunque venga de otro dispositivo. Si guardas en una hoja desde GTM,
-   usa el mismo ID para no repetir filas.
-
-Si la persona cambia el email o el teléfono, cuenta como un lead nuevo.
+Solo se frena el doble envío accidental: si en la misma página el mismo lead se envía otra vez
+dentro de 1 minuto, se publica `walead_repeat` en lugar de `walead_submit`.
 
 ---
 
@@ -260,8 +257,8 @@ Cada paso publica un evento en el `dataLayer`; crea en GTM un activador por cada
 |---|---|---|
 | `walead_open` | Se abre el panel | Una vez por apertura, con `walead_origen` |
 | `walead_start` | La persona empieza a completar el formulario | Una vez por carga de página |
-| `walead_submit` | Lead nuevo enviado | Es la conversión |
-| `walead_repeat` | Alguien que ya era lead vuelve a enviar | No es conversión |
+| `walead_submit` | Consulta enviada (también clientes recurrentes) | Es la conversión |
+| `walead_repeat` | Doble envío del mismo lead en menos de 1 minuto | No es conversión |
 
 ---
 

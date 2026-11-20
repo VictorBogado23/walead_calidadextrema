@@ -934,20 +934,20 @@
   // Publica el evento 'walead_submit' en el dataLayer. Desde GTM se manda a
   // GA4 / Google Ads / Meta / Sheet. Email y teléfono van solo en user_data.
   function pushLead(data) {
-    // Candado anti-duplicado: si este navegador ya envió este lead_id, no se
-    // cuenta otra conversión (el visitante igual va a WhatsApp).
-    var previo = null;
-    try { previo = JSON.parse(store("localStorage", "walead_lead") || "null"); } catch (e) {}
+    // Clientes recurrentes: cada consulta nueva se publica como walead_submit.
+    // Solo se frena el doble envío accidental del mismo lead dentro de 1 minuto
+    // en la misma página (ahí se publica walead_repeat).
     window.__waLeadSent = window.__waLeadSent || {};
-    if (window.__waLeadSent[data.lead_id] || (previo && previo.id === data.lead_id)) {
+    var antes = window.__waLeadSent[data.lead_id];
+    if (antes && Date.now() - antes < 60000) {
       track({ event: "walead_repeat", walead_lead_id: data.lead_id });
       return;
     }
-    window.__waLeadSent[data.lead_id] = true;
+    window.__waLeadSent[data.lead_id] = Date.now();
 
     track({
-      event: "walead_submit",       // <- activador en GTM
-      walead_lead_id: data.lead_id, // ID de transacción / event_id: evita contar doble
+      event: "walead_submit",         // <- activador en GTM
+      walead_lead_id: data.lead_id,   // estable por persona (el event_id lo genera GTM)
       walead_tipo_cliente: data.tipo, // Consumidor Final | Institución | Revendedor
       // Formato que esperan GA4 / Google Ads para datos proporcionados por el usuario.
       user_data: {
