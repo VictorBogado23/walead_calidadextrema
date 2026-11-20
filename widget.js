@@ -8,7 +8,6 @@
  * 'walead_submit' en el dataLayer (email y teléfono dentro de user_data) y
  * abre WhatsApp. Guardar el lead (Sheet, CRM, etc.) se hace desde GTM.
  *
- * Antes de enviar, el visitante debe aceptar la casilla de consentimiento.
  * Todos los atributos son opcionales salvo data-phone.
  * Ver el instructivo (INSTALACION.md) para la lista completa.
  *
@@ -75,8 +74,6 @@
     country: String(attr("country", "") || "").toUpperCase(), // país por defecto (ISO, ej: AR)
     countries: String(attr("countries", "") || "").toUpperCase(), // países destacados arriba (ej: "AR,UY,PY")
     delay: parseInt(attr("delay", "0"), 10) || 0, // ms para abrir solo automáticamente (0 = no)
-    // La casilla de consentimiento es obligatoria siempre; este atributo solo cambia el texto.
-    consentText: attr("consent-text", "Acepto que se use mi email y mi WhatsApp para contactarme."),
     privacy: textAttr("privacy", ""), // línea opcional debajo del botón
     theme: String(attr("theme", "auto")).toLowerCase(), // auto | light | dark
     thanks: attr("thanks", "Te estamos llevando a WhatsApp para seguir la conversación."),
@@ -90,7 +87,6 @@
   ["title", "subtitle", "greeting", "buttonText", "ctaText", "privacy", "thanks"].forEach(function (k) {
     cfg[k] = String(cfg[k]).replace(/\{\s*negocio\s*\}/g, NAME);
   });
-  cfg.consentText = String(cfg.consentText).replace(/\{\s*negocio\s*\}/g, NAME || "este sitio");
 
   // API pública. Las llamadas hechas antes de que el widget esté listo quedan en cola.
   //   WaLead.open()                 abre (y lleva el foco al formulario)
@@ -353,13 +349,6 @@
     ".wl-suggest{margin-top:4px;font-size:13px;color:var(--wl-soft)}",
     ".wl-suggest button{border:0;background:none;padding:12px 0;margin:-12px 0;color:var(--wl-ink);font-size:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}",
 
-    ".wl-field>.wl-consent{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:4px 0;font-size:13px;font-weight:400;color:var(--wl-soft);margin:0;cursor:pointer;line-height:1.4}",
-    ".wl-consent input{-webkit-appearance:none;appearance:none;width:20px;height:20px;margin:0;flex:0 0 auto;cursor:pointer;border:1px solid var(--wl-field);border-radius:6px;background:var(--wl-input);display:grid;place-items:center;transition:background .15s,border-color .15s}",
-    ".wl-consent input::after{content:'';width:5px;height:10px;border:solid var(--wl-on);border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg) scale(0);transition:transform .15s cubic-bezier(.16,1,.3,1)}",
-    ".wl-consent input:checked{background:var(--wl-brand);border-color:var(--wl-brand)}",
-    ".wl-consent input:checked::after{transform:translateY(-1px) rotate(45deg) scale(1)}",
-    ".wl-invalid .wl-consent input{border-color:var(--wl-err)}",
-    ".wl-consent input:focus-visible{outline:3px solid var(--wl-ring);outline-offset:2px}",
 
     ".wl-submit{width:100%;height:52px;border:0;border-radius:999px;background:var(--wl-brand);color:var(--wl-on);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 18px -4px var(--wl-ring),0 2px 6px var(--wl-ring);transition:filter .15s,transform .15s,box-shadow .15s;text-decoration:none}",
     ".wl-submit:hover{filter:brightness(1.06);transform:translateY(-1px)}",
@@ -477,10 +466,6 @@
               "</div>" +
               '<div class="wl-err" id="wl-phone-err" role="alert">' + alertIcon + "<span></span></div>" +
             "</div>" +
-            '<div class="wl-field" data-f="consent">' +
-              '<label class="wl-consent"><input type="checkbox" id="wl-consent" name="consentimiento" aria-describedby="wl-consent-err" required><span>' + escapeHtml(cfg.consentText) + "</span></label>" +
-              '<div class="wl-err" id="wl-consent-err" role="alert">' + alertIcon + "<span></span></div>" +
-            "</div>" +
             '<button class="wl-submit" type="submit">' + waIcon + "<span>" + escapeHtml(cfg.buttonText) + "</span></button>" +
             (cfg.privacy ? '<p class="wl-privacy">' + lockIcon + "<span>" + escapeHtml(cfg.privacy) + "</span></p>" : "") +
           "</form>" +
@@ -520,8 +505,6 @@
     var pop = $(".wl-pop");
     var search = $(".wl-search input");
     var list = $(".wl-list");
-    var consentField = $('[data-f="consent"]');
-    var consentChk = $("#wl-consent");
 
     if (store("sessionStorage", "walead_seen")) root.classList.add("wl-seen");
 
@@ -745,12 +728,6 @@
       return !msg;
     }
 
-    function validateConsent() {
-      var ok = consentChk.checked;
-      setState(consentField, ok ? "" : "Para continuar, aceptá el uso de tus datos");
-      return ok;
-    }
-
     // Si pegan el número con +código, cambiamos el país y dejamos solo el número local.
     function absorbIntlPrefix() {
       var v = phoneInput.value;
@@ -778,7 +755,6 @@
       if (clean !== phoneInput.value) phoneInput.value = clean;
       if (phoneField.classList.contains("wl-invalid") || phoneField.classList.contains("wl-valid")) validatePhone();
     });
-    consentChk.addEventListener("change", function () { validateConsent(); });
 
     // ------- Prellenado (si el visitante ya dejó sus datos antes) -------
     var saved = null;
@@ -798,10 +774,8 @@
 
       var okEmail = validateEmail();
       var okPhone = validatePhone();
-      var okConsent = validateConsent();
       if (!okEmail) return emailInput.focus();
       if (!okPhone) return phoneInput.focus();
-      if (!okConsent) return consentChk.focus();
 
       var email = emailInput.value.trim().toLowerCase();
       var telefono = toE164(phoneInput.value, current);
