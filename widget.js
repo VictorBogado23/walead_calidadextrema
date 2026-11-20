@@ -335,7 +335,7 @@
     // Tipo de cliente: botón + lista propia.
     ".wl-tipo{position:relative;cursor:pointer}",
     ".wl-tipo-btn{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--wl-text);text-align:left;padding:0 66px 0 0;margin:0;cursor:pointer;border-radius:0 14px 14px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
-    ".wl-tipo-btn.wl-empty{color:var(--wl-muted)}",
+    ".wl-tipo-btn.wl-tipo-empty{color:var(--wl-muted)}",
     ".wl-tipo>.wl-chev{position:absolute;right:14px;width:16px;height:16px;color:var(--wl-muted);pointer-events:none;transition:transform .15s}",
     ".wl-list-open .wl-tipo>.wl-chev{transform:rotate(180deg)}",
     ".wl-valid .wl-tipo>.wl-ok{position:absolute;right:38px;margin:0}",
@@ -492,7 +492,7 @@
             '<div class="wl-field" data-f="tipo">' +
               '<label id="wl-tipo-lbl" for="wl-tipo">Tipo de cliente</label>' +
               '<div class="wl-control wl-tipo"><span class="wl-ic">' + userIcon + "</span>" +
-                '<button type="button" id="wl-tipo" class="wl-tipo-btn wl-empty" aria-haspopup="listbox" aria-expanded="false" aria-controls="wl-tipo-list" aria-labelledby="wl-tipo-lbl wl-tipo" aria-describedby="wl-tipo-err">Elegí una opción</button>' +
+                '<button type="button" id="wl-tipo" class="wl-tipo-btn wl-tipo-empty" aria-haspopup="listbox" aria-expanded="false" aria-controls="wl-tipo-list" aria-labelledby="wl-tipo-lbl wl-tipo" aria-describedby="wl-tipo-err">Elegí una opción</button>' +
                 okIcon + chevIcon +
                 '<ul class="wl-tipo-list" id="wl-tipo-list" role="listbox" aria-labelledby="wl-tipo-lbl" tabindex="-1" hidden>' +
                   TIPOS.map(function (t, i) {
@@ -808,7 +808,7 @@
     function setTipo(v) {
       tipo = TIPOS.indexOf(v) !== -1 ? v : "";
       tipoBtn.textContent = tipo || "Elegí una opción";
-      tipoBtn.classList.toggle("wl-empty", !tipo);
+      tipoBtn.classList.toggle("wl-tipo-empty", !tipo);
       tipoOpts.forEach(function (li, i) { li.setAttribute("aria-selected", TIPOS[i] === tipo ? "true" : "false"); });
     }
     function markTipo(i) {
